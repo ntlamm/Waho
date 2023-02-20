@@ -1,7 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using Waho.DataService;
+using Waho.WahoModels;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddDbContext<WahoContext>(options => options.UseSqlServer(
+    builder.Configuration.GetConnectionString("Waho")
+    ));
+builder.Services.AddScoped<DataServiceManager>();
 
 var app = builder.Build();
 
