@@ -1,0 +1,355 @@
+﻿@page
+@model Waho.Pages.WarehouseStaff.Products.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Waho - Sản Phẩm</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Waho.styles.css" asp-append-version="true" />
+
+    <style>
+        .message {
+            text-align: right;
+            color: red;
+            font-size: 14px;
+            margin: 2px 6px;
+            animation-name: myAnimation;
+            animation-duration: 10000ms;
+            animation-fill-mode: forwards;
+        }
+
+        .input-box.button {
+            color: #fff;
+            letter-spacing: 1px;
+            border: none;
+            background: #FF6600;
+            cursor: pointer;
+        }
+
+            .input-box.button:hover {
+                background: #0e4bf1;
+            }
+
+
+        .modal {
+            position: fixed;
+            left: 0;
+            top: 0;
+            display: block;
+            background: rgba(0, 0, 0, 0.5);
+            height: 100%;
+            width: 100%;
+            transform: scale(0);
+            transition-duration: 0s;
+            z-index: 99;
+            display: flex;
+        }
+
+        #insert-user-modal {
+            margin: auto;
+            width: 40%;
+            padding: 15px 35px 15px 35px;
+            background: #fff;
+            transform: scale(0);
+            transition-duration: 0.4s;
+            z-index: 99;
+            border-radius: 5px;
+            box-shadow: 0px 0px 1px 1px #ccc;
+        }
+
+        #edit-user-modal {
+            margin: auto;
+            width: 60%;
+            display: block;
+            padding: 15px 35px 15px 35px;
+            background: #fff;
+            transform: scale(0);
+            transition-duration: 0.4s;
+            z-index: 99;
+            border-radius: 5px;
+            box-shadow: 0px 0px 1px 1px #ccc;
+        }
+
+        .active {
+            z-index: 3;
+        }
+    </style>
+
+</head>
+
+@*insert model*@
+<div class="modal">
+    <div id="insert-user-modal">
+        <form id="searchForm" action="Create" method="POST">
+            <div class="col-md-6">
+                <h4 class="text-right">Thêm người dùng mới</h4>
+                <div id="notification"></div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <label class="labels">Tên tài khoản</label>
+                    <input name="username" class="form-control input" type="text" placeholder="Nhập tên tài khoản" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="labels">Email</label>
+                    <input name="email" class="form-control input" type="email" placeholder="Nhập email" required>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <label class="labels">Họ và tên</label>
+                    <input name="name" type="text" class="form-control input" placeholder="Nhập họ và tên" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="labels">Ngày sinh</label>
+                    <input name="dob" type="date" class="form-control input">
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <label class="labels">Số điện thoại</label>
+                    <input name="phone" pattern="[0-9]{10}" type="text" class="form-control input" placeholder="Nhập số điện thoại" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="labels">Giới tính</label><br />
+                    <input type="radio" name="gender" class="mt-3 input"> Nam
+                    <input type="radio" name="gender" style="margin-left: 50px" class="mt-3 input"> Nữ
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div>
+                    <label class="labels">Địa chỉ</label>
+                    <input name="address" type="text" class="form-control input" placeholder="Nhập địa chỉ">
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <label class="labels">Vai trò</label>
+                    <select name="role" class="form-select input" aria-label="Default select example">
+                        <c:forEach items="${requestScope.groups}" var="g">
+                            <option value="${g.id}">${g.name}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="labels">Trạng thái</label>
+                    <select name="status" class="form-select input" aria-label="Default select example">
+                        <option value="1">Kích hoạt</option>
+                        <option value="0">Khoá</option>
+                    </select>
+                </div>
+            </div>
+            <div class="text-center mt-5">
+                <!--                        <button class="input-box button" type="submit" style="padding: 5px;border-radius: 5px">Thêm người dùng</button>-->
+                <button class="input-box button" type="button" style="padding: 5px;border-radius: 5px" onclick="insertUser()">Thêm người dùng</button>
+                <button style="margin-left: 10px;padding:5px;border-radius: 5px" class="input-box button btn btn-primary profile-button" type="button" onclick="modal('insert-user-modal', 0, 'scale(0)')">Đóng</button>
+            </div>
+        </form>
+    </div>
+</div>
+@*end insert model*@
+@*start filter*@
+<div style="background: #fff; padding:10px;margin-top: 20px; border-radius: 10px;" class="col-lg-12">
+    <form method="GET" style="margin-bottom: 20px; ">
+        <div class="row">
+            <div class="form-group col-md-1">
+                <label for="inputState">Hiển thị</label>
+                <select id="inputState" class="form-control" name="number" onchange="this.form.submit()">
+                    <option value="5"> 5 hàng</option>
+                    <option selected value="10">10 hàng</option>
+                    <option value="15">15 hàng</option>
+                    <option value="20">20 hàng</option>
+                </select>  
+                </div>
+            <div class="form-group col-md-3">
+                <input type="text" asp-for="textSearch" class="form-control" placeholder="Nhập tên sản phẩm, loại sản phẩm, tên nhà cung cấp" name="search" style="margin-top: 20px">
+            </div>
+            <div class="form-group col-md-2" style="">
+                <button class="input-box button" type="submit" style="border-radius: 5px;padding: 5px 15px 5px 15px; margin-top: 20px">
+                    <i style="" class="bi bi-search fa-lg"></i> Tìm kiếm
+                </button>
+            </div>
+            <div class="form-group col-md-2">
+                <button style="padding: 5px 15px 5px 15px;border-radius: 5px;text-align: center; margin-top: 20px" class="input-box button" type="button" onclick="modal('insert-user-modal', 0, 'scale(1)');">
+                    <i class="bi bi-person-plus-fill" asp-page="Create"></i> Thêm sản phẩm
+                </button>
+            </div>
+        </div>
+    </form>
+    @*end filter*@
+    <div class="row">
+    <div class="col-lg-2">
+        <input type="button" value="hiển thị thêm" class="btn btn-primary" onclick="ShowButton()"/>
+        <div class="row" style="display:none" id="showButton">
+                <input type="button" value="Tên sản phẩm" id="productName" onclick="showProperty('tbProductName')" class="btn btn-primary w-75 m-2" />
+                <input type="button" value="Giá nhập" id="importPrice" onclick="showProperty('tbImportPrice')" class="btn btn-primary w-75 m-2" />
+                <input type="button" value="Đơn giá" id="unitPrice" onclick="showProperty('tbUnitPrice')" class="btn btn-primary w-75 m-2" />
+                <input type="button" value="Giá tại kho" id="unitInStock" onclick="showProperty('tbUnitInStock')" class="btn btn-primary w-75 m-2" />
+                <input type="button" value="Thương hiệu" id="trademark" onclick="showProperty('tbTrademark')" class="btn btn-primary w-75 m-2" />
+                <input type="button" value="Trọng lượng" id="weight" onclick="showProperty('tbWeight')" class="btn btn-primary w-75 m-2" />
+                <input type="button" value="Vị trí" id="location" onclick="showProperty('tbLocation')" class="btn btn-primary w-75 m-2" />
+                <input type="button" value="Đơn vị" id="unit" onclick="showProperty('tbUnit')" class="btn btn-primary w-75 m-2" />
+                <input type="button" value="Định Mức tồn Min" id="inventoryLevelMin" onclick="showProperty('tbInventoryLevelMin')" class="btn btn-primary w-75 m-2" />
+                <input type="button" value="Định Mức tồn Max" id="inventoryLevelMax" onclick="showProperty('tbInventoryLevelMax')" class="btn btn-primary w-75 m-2" />
+                <input type="button" value="Mô tả" id="description" onclick="showProperty('tbDescription')" class="btn btn-primary w-75 m-2" />
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <input id="checkBoxProductName" type="checkbox"/>
+            </div>
+            <div class="col-lg-6">tên sản phẩm</div>
+        </div>
+    </div>
+    <div class="col-lg-10">
+        <table class="table">
+        <thead>
+            <tr>
+                <th id="tbProductName">
+                    @Html.DisplayNameFor(model => model.Product[0].ProductName)
+                </th>
+                        <th id="tbImportPrice">
+                    @Html.DisplayNameFor(model => model.Product[0].ImportPrice)
+                </th>
+                <th id="tbUnitPrice">
+                    @Html.DisplayNameFor(model => model.Product[0].UnitPrice)
+                </th>
+                        <th style="display:none" id="tbUnitInStock">
+                    @Html.DisplayNameFor(model => model.Product[0].UnitInStock)
+                </th>
+                        <th style="display:none">
+                    @Html.DisplayNameFor(model => model.Product[0].HaveDate)
+                </th>
+                        <th style="display:none">
+                    @Html.DisplayNameFor(model => model.Product[0].DateOfManufacture)
+                </th>
+                        <th style="display:none">
+                    @Html.DisplayNameFor(model => model.Product[0].Expiry)
+                </th>
+                        <th style="display:none" id="tbTrademark">
+                    @Html.DisplayNameFor(model => model.Product[0].Trademark)
+                </th>
+                        <th style="display:none" id="tbWeight">
+                    @Html.DisplayNameFor(model => model.Product[0].Weight)
+                </th>
+                        <th id="tbLocation">
+                    @Html.DisplayNameFor(model => model.Product[0].Location)
+                </th>
+                        <th style="display:none" id="tbUnit">
+                    @Html.DisplayNameFor(model => model.Product[0].Unit)
+                </th>
+                        <th style="display:none" id="tbInventoryLevelMin">
+                    @Html.DisplayNameFor(model => model.Product[0].InventoryLevelMin)
+                </th>
+                        <th style="display:none" id="tbInventoryLevelMax">
+                    @Html.DisplayNameFor(model => model.Product[0].InventoryLevelMax)
+                </th>
+                        <th style="display:none" id="tbDescription">
+                    @Html.DisplayNameFor(model => model.Product[0].Description)
+                </th>
+                        <th id="tbSubCategory">
+                    @Html.DisplayNameFor(model => model.Product[0].SubCategory)
+                </th>
+                        <th style="display:none">
+                    @Html.DisplayNameFor(model => model.Product[0].Supplier)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Product)
+            {
+                <tr>
+                            <td id="tbProductName">
+                        @Html.DisplayFor(modelItem => item.ProductName)
+                    </td>
+                            <td id="tbImportPrice">
+                        @Html.DisplayFor(modelItem => item.ImportPrice)
+                    </td>
+                            <td id="tbUnitPrice">
+                        @Html.DisplayFor(modelItem => item.UnitPrice)
+                    </td>
+                            <td style="display:none" id="tbUnitInStock">
+                        @Html.DisplayFor(modelItem => item.UnitInStock)
+                    </td>
+                        <td style="display:none">
+                        @Html.DisplayFor(modelItem => item.HaveDate)
+                    </td>
+                        <td style="display:none">
+                        @Html.DisplayFor(modelItem => item.DateOfManufacture)
+                    </td>
+                        <td style="display:none">
+                        @Html.DisplayFor(modelItem => item.Expiry)
+                    </td>
+                            <td style="display:none" id="tbTrademark">
+                        @Html.DisplayFor(modelItem => item.Trademark)
+                    </td>
+                        <td style="display:none" id="tbWeight">
+                        @Html.DisplayFor(modelItem => item.Weight)
+                    </td>
+                            <td id="tbLocation">
+                        @Html.DisplayFor(modelItem => item.Location)
+                    </td>
+                            <td style="display:none" id="tbUnit">
+                        @Html.DisplayFor(modelItem => item.Unit)
+                    </td>
+                            <td style="display:none" id="tbInventoryLevelMin">
+                        @Html.DisplayFor(modelItem => item.InventoryLevelMin)
+                    </td>
+                            <td style="display:none" id="tbInventoryLevelMax">
+                        @Html.DisplayFor(modelItem => item.InventoryLevelMax)
+                    </td>
+                            <td style="display:none" id="tbDescription">
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                            <td id="tbSubCategory">
+                        @Html.DisplayFor(modelItem => item.SubCategory.SubCategoryName)
+                    </td>
+                    <td class="d-none">
+                        @Html.DisplayFor(modelItem => item.Supplier.SupplierId)
+                    </td>
+                    <td>
+                        <a class="bi bi-123" asp-page="./Edit" asp-route-id="@item.ProductId">Edit</a> |
+                        <a asp-page="./Details" asp-route-id="@item.ProductId">Details</a> |
+                        <a class="bi bi-6-square-fill" asp-page="./Delete" asp-route-id="@item.ProductId">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+    </div>
+</div>
+<script>
+    function modal(id, position, transform) {
+                var box = document.getElementById(id);
+                var modal = document.getElementsByClassName('modal');
+                modal[position].style.transform = transform;
+                box.style.transform = transform;
+            }
+    function ShowButton(){
+        if (document.getElementById("showButton").style.display === "none"){
+            document.getElementById("showButton").style.display = "block";
+        }else{
+            document.getElementById("showButton").style.display = "none";
+        }
+    }
+
+    function showProperty(id){
+        if (document.getElementById(id).style.display === "none") {
+            document.getElementById(id).style.display = "block";
+        } else {
+            document.getElementById(id).style.display = "none";
+        }
+    }
+</script>
+<script src="../../../admin/js/tabler.min.js" defer></script>
+<script src="../../../admin/js/demo.min.js" defer></script>
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.12.0/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.12.0/js/dataTables.bootstrap4.min.js"></script>
